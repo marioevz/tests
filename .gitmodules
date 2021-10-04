@@ -1,0 +1,3 @@
+[submodule "legacy-tests"]
+	path = legacy-tests
+	url = https://github.com/marioevz/legacy-tests.git
