@@ -1,0 +1,68 @@
+eofWrappersExample:
+  _info:
+    comment: Test that uses EOF wrappers for compiled code
+
+  env:
+    currentCoinbase: 2adc25665018aa1fe0e6bc666dac8fc2697ff9ba
+    currentDifficulty: 0x20000
+    currentGasLimit: 0xFF112233445566
+    currentNumber: 1
+    currentTimestamp: 1000
+    previousHash: 5e20a0453cecd065ea59c37ac63e079ee08998b6045136a8ce6635c7912ec0b6
+
+
+  pre:
+    # EVM Object Format V1 wrapped yul
+    0000000000000000000000000000000000000100:
+      balance: '1000000000000000000'
+      code: |
+          :eof v1
+          - code: |
+              :yul
+              {
+                stop()
+              }
+          - data: "0x123456"
+      nonce: '0'
+      storage: {}
+
+    a94f5374fce5edbc8e2a8697c15331677e6ebf0b:
+      balance: '1000000000000000000'
+      code: '0x'
+      nonce: '0'
+      storage: {}
+
+
+
+  # Multiple transaction description that will be applied on a pre state      
+  transaction:
+    # foreach d in `data` { foreach g in `gasLimit` { foreach v in `value`  {  pre.applyTransaction(d, g, v)  }}}
+    # each element of the data array is treated same as account's code field. You could use LLL here
+    data:
+    - ''
+    # Be careful when adding gasLimits that are < then intrinsic gas cost. StateTests are not allowed to have invalid transactions
+    gasLimit:
+    - '400000'
+    gasPrice: '10'
+    # Nonce must be same as account nonce a94f5374fce5edbc8e2a8697c15331677e6ebf0b
+    nonce: '0'
+    # if `to` field is empty, the transaction becomes contract creation. code from data will be executed as a deployment code
+    to: 095e7baea6a6c7c4c2dfeb977efac326af552d87
+    value:
+    - '100000'
+    # secretKey is a privKey of a94f5374fce5edbc8e2a8697c15331677e6ebf0b
+    secretKey: "45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8"
+
+
+  expect:
+    - indexes:
+        data: !!int -1
+        gas:  !!int -1
+        value: !!int -1
+
+      network:
+        - 'London'
+      result:
+        0000000000000000000000000000000000000100:
+          code:
+            '0xef00010100010200030000123456'
